@@ -1,0 +1,34 @@
+package com.tinyquest.hub.shared.response;
+
+import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
+/**
+ * API 응답을 위한 공통 형식입니다.
+ * sealed interface로 구현하여, Success, Failure 등 정해진 타입의 응답만 반환되도록 강제합니다.
+ * @param <T> 응답 데이터의 타입
+ */
+public sealed interface ApiResponse<T> permits ApiResponse.Success, ApiResponse.Failure {
+
+    record Success<T>(String code, String message, T data, OffsetDateTime timestamp)
+            implements ApiResponse<T> {
+        public static <T> Success<T> of(T data) {
+            return new Success<>("OK", "success", data, OffsetDateTime.now());
+        }
+
+        public static Success<Void> of() {
+            return new Success<>("OK", "success", null, OffsetDateTime.now());
+        }
+    }
+
+    record Failure<T>(String code, String message, T data, OffsetDateTime timestamp)
+            implements ApiResponse<T> {
+
+        public static Failure<Void> of(String code, String message) {
+            return new Failure<>(code, message, null, OffsetDateTime.now());
+        }
+    }
+
+}

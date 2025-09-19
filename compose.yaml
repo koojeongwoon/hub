@@ -1,0 +1,24 @@
+services:
+  db:
+    image: mariadb:11.4
+    container_name: hub-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootpass}
+      MARIADB_DATABASE: ${DB_NAME:-hubdb}
+      MARIADB_USER: ${DB_USER:-hub}
+      MARIADB_PASSWORD: ${DB_PASS:-pass}
+    ports:
+      - "${DB_PORT:-3308}:3306"
+    volumes:
+      # Persists database data on the host machine.
+      - hub-db-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$$MARIADB_ROOT_PASSWORD || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  hub-db-data:
+    # Defines the named volume for data persistence.

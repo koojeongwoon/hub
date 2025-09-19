@@ -1,0 +1,11 @@
+spring:
+  test:
+    database:
+      replace: none     # H2로 자동 대체 금지 (Testcontainers 유지)
+  jpa:
+    hibernate:
+      ddl-auto: update  # Flyway/Liquibase 쓰면 보통 validate/none으로
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc.time_zone: UTC

@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: hub
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+logging:
+  file:
+    path: "logs/"
+
+server:
+  port: 8080
+
