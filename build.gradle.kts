@@ -6,6 +6,7 @@ val springDocVersion: String by project
 val jakartaPersistenceApiVersion: String by project
 val httpClientVersion: String by project
 val p6spyVersion: String by project
+val jjwtVersion: String by project
 
 plugins {
 	java
@@ -84,6 +85,10 @@ dependencies {
 
     // Logging
     implementation("p6spy:p6spy:$p6spyVersion")
+
+    implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion") // JWT API (인터페이스)
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")  // JWT 구현체
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")  // JSON 파싱 (Jackson 기반)
 
 }
 
