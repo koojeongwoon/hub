@@ -41,6 +41,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.modulith:spring-modulith-starter-core")
 	implementation("org.springframework.modulith:spring-modulith-starter-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
 	runtimeOnly("org.mariadb.jdbc:mariadb-java-client")

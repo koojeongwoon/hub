@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import static com.tinyquest.hub.user.domain.entity.QUser.user;
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepositoryCustom {
 
+    // private final JdbcClient jdbcClient;
     private final JPAQueryFactory query;
 
     @Override

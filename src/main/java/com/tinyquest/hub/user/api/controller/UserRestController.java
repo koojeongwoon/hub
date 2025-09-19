@@ -7,7 +7,6 @@ import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
-import com.tinyquest.hub.user.api.dto.response.UserResponse;
 import com.tinyquest.hub.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,7 @@ public class UserRestController {
     }
 
     @GetMapping
-    public PageResponse<UserResponse> search(
+    public PageResponse<UserDetailResponse> search(
             @Valid UserSearchRequest req,
             Pageable pageable
     ) {

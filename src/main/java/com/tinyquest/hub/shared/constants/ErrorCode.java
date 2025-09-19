@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ErrorCode {
     // ===== COMMON =====
     INTERNAL_SERVER_ERROR("COMMON:INTERNAL:5001", "서버 내부 오류가 발생했습니다."),
+    IP_ERROR("COMMON:INTERNAL:5010", "적합한 서버 IP를 찾을 수 없습니다."),
 
     // ===== USER =====
     USER_VALIDATION_1001("USER:VALIDATION:1001", "이메일 형식이 올바르지 않습니다."),

@@ -8,9 +8,9 @@ import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
-import com.tinyquest.hub.user.api.dto.response.UserResponse;
 import com.tinyquest.hub.user.domain.entity.User;
 import com.tinyquest.hub.user.domain.repository.UserRepository;
+import com.tinyquest.hub.user.infra.jdbc.UserJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,17 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final UserJdbcRepository jdbcRepo;
     private final UserRepository repo;
     private final UserConverter converter;
 
     @Transactional(readOnly = true)
     public UserDetailResponse get(Long id) {
         var u = repo.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND_4001));
+        // var u2 = jdbcRepo.findById(id).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND_4001));
         return converter.toDetailResponse(u);
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<UserResponse> search(UserSearchRequest req, Pageable pageable) {
+    public PageResponse<UserDetailResponse> search(UserSearchRequest req, Pageable pageable) {
         Page<User> userPage = repo.search(req.q(), pageable);
         return PageResponse.from(userPage, converter::toResponse);
     }
