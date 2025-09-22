@@ -10,11 +10,11 @@ import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
 import com.tinyquest.hub.user.domain.entity.User;
 import com.tinyquest.hub.user.domain.repository.UserRepository;
-import com.tinyquest.hub.user.infra.jdbc.UserJdbcRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,9 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserJdbcRepository jdbcRepo;
+    // private final UserJdbcRepository jdbcRepo;
     private final UserRepository repo;
     private final UserConverter converter;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public UserDetailResponse get(Long id) {
@@ -42,7 +43,11 @@ public class UserService {
 
     @Transactional
     public void create(UserCreateRequest req) {
-        repo.save(User.of(req.email(), req.name(), req.age()));
+        if (repo.findByEmail(req.email()).isPresent()) {
+            throw new BusinessException(ErrorCode.USER_VALIDATION_1002);
+        }
+        String encodedPassword = passwordEncoder.encode(req.password());
+        repo.save(User.of(req.email(), encodedPassword, req.name(), req.age()));
     }
 
     @Transactional

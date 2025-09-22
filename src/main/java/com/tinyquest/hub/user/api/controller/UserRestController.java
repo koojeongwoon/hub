@@ -44,7 +44,7 @@ public class UserRestController {
         return svc.search(req, safe);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ApiResponse<Void> create(
             @Valid @RequestBody UserCreateRequest req
     ) {
