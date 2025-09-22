@@ -10,8 +10,9 @@ spring:
       pool-name: PlatformHubHikariCP
       minimum-idle: 10
       maximum-pool-size: 50
-      max-lifetime: 600000
-      idle-timeout: 300000
+      connection-timeout: 10000  # 커넥션 못 얻으면 10s 후 실패
+      idle-timeout: 300000       # 5m
+      max-lifetime: 1800000      # 30m (DB wait_timeout보다 짧게)
       auto-commit: true
 
       data-source-properties:
@@ -25,24 +26,57 @@ spring:
         cacheServerConfiguration: true
         elideSetAutoCommits: true
         maintainTimeStats: false
+
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
-    open-in-view: false
+        jdbc:
+          batch_size: 100
+        order_inserts: true
+        order_updates: true
+        default_batch_fetch_size: 256
+        connection:
+          provider_disables_autocommit: true
 
+  mvc:
+    async:
+      request-timeout: 30s
+  task:
+    execution: # @Async, ApplicationEventMulticaster 등
+      thread-name-prefix: app-exec-
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
+    scheduling: # @Scheduled
+      thread-name-prefix: app-sched-
+      pool:
+        size: 4
 logging:
   file:
     path: "logs/"
 
 server:
+  http2:
+    enabled: true
   port: 8080
   compression:
     enabled: true
     min-response-size: 1KB
     mime-types:
       - application/json
+      - application/problem+json
+      - application/javascript
       - text/html
       - text/plain
+  tomcat:
+    threads:
+      max: 200       # 동시 요청 처리 워커 최대치 (트래픽/CPU에 맞게 200~400 선에서)
+      min-spare: 20  # 유휴 워커 기본 풀
+    accept-count: 200          # 워커 꽉 찼을 때 대기 큐
+    connection-timeout: 10s    # 커넥션 타임아웃
+    mbeanregistry:
+      enabled: true            # 톰캣 JMX로 모니터링 필요시
