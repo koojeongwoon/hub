@@ -2,7 +2,6 @@ package com.tinyquest.hub.user.service;
 
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
-import com.tinyquest.hub.shared.response.PageResponse;
 import com.tinyquest.hub.user.api.converter.UserConverter;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
@@ -12,8 +11,8 @@ import com.tinyquest.hub.user.domain.entity.User;
 import com.tinyquest.hub.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,9 +35,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<UserDetailResponse> search(UserSearchRequest req, Pageable pageable) {
+    public Page<UserDetailResponse> search(UserSearchRequest req, Pageable pageable) {
         Page<User> userPage = repo.search(req.q(), pageable);
-        return PageResponse.from(userPage, converter::toResponse);
+        return userPage.map(converter::toResponse);
     }
 
     @Transactional
