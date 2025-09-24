@@ -1,7 +1,6 @@
 package com.tinyquest.hub.user.document;
 
 import com.tinyquest.hub.shared.response.ApiResponse;
-import com.tinyquest.hub.shared.response.PageResponse;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
@@ -10,287 +9,76 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.*;
 
-@Tag(
-        name = "1-0. User API",
-        description = "사용자 데이터 컨트롤러"
-)
+@Tag(name = "1-0. User API", description = "사용자 관리")
 public interface UserRestControllerDoc {
 
     @Operation(
+            summary = "내 프로필 조회",
+            description = "현재 인증된 사용자의 상세 정보를 반환합니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
+            }
+    )
+    UserDetailResponse get();
+
+    @Operation(
             summary = "사용자 상세 조회",
-            description = """
-                사용자 단건 조회
-            """,
+            description = "사용자 번호로 사용자 정보를 조회합니다.",
             parameters = {
-                    @Parameter(name = "id", in = ParameterIn.PATH, description = "사용자번호", example = "1")
+                    @Parameter(name = "id", in = ParameterIn.PATH, description = "사용자 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             },
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "정상 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Success.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                       "code": null,
-                                                       "message": "성공적으로 처리되었습니다.",
-                                                       "data": {
-                                                       },
-                                                       "timestamp": "2025-04-30T15:02:38.500157+09:00"
-                                                     }
-                                                    """
-                                    )
-                            )
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "서버 오류",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Failure.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                      "code": "INTERNAL_ERROR",
-                                                      "message": "서버 내부 오류가 발생했습니다.",
-                                                      "data": null,
-                                                      "timestamp": "2025-04-30T15:00:51.092146+09:00"
-                                                    }
-                                                    """
-                                    )
-                            )
-                    )
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
             }
     )
-    UserDetailResponse get(Long id);
+    UserDetailResponse getById(Long id);
 
     @Operation(
-            summary = "사용자 목록 조회",
-            description = """
-                사용자 다건 조회
-            """,
+            summary = "사용자 목록 검색",
+            description = "검색 조건과 페이지 정보를 이용해 사용자 목록을 조회합니다.",
             parameters = {
-                    @Parameter(name = "q", in = ParameterIn.QUERY, description = "검색어", example = "1"),
-                    @Parameter(name = "page", in = ParameterIn.QUERY, description = "페이지", example = "0"),
-                    @Parameter(name = "size", in = ParameterIn.QUERY, description = "사이즈", example = "20"),
-                    @Parameter(name = "sort", in = ParameterIn.QUERY, description = "정렬조건", example = ""),
-
+                    @Parameter(name = "q", in = ParameterIn.QUERY, description = "검색 키워드", schema = @Schema(type = "string"))
             },
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "정상 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Success.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                       "code": null,
-                                                       "message": "성공적으로 처리되었습니다.",
-                                                       "data": [],
-                                                       "timestamp": "2025-04-30T15:02:38.500157+09:00"
-                                                     }
-                                                    """
-                                    )
-                            )
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "서버 오류",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Failure.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                      "code": "INTERNAL_ERROR",
-                                                      "message": "서버 내부 오류가 발생했습니다.",
-                                                      "data": null,
-                                                      "timestamp": "2025-04-30T15:00:51.092146+09:00"
-                                                    }
-                                                    """
-                                    )
-                            )
-                    )
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = Page.class)))
             }
     )
-    PageResponse<UserDetailResponse> search(UserSearchRequest req, Pageable pageable);
+    Page<UserDetailResponse> search(@Parameter(hidden = true) @Valid UserSearchRequest req,
+                                    @Parameter(hidden = true) Pageable pageable);
 
     @Operation(
-            summary = "사용자 목록 조회",
-            description = """
-                사용자 다건 조회
-            """,
-            parameters = {
-                    @Parameter(name = "q", in = ParameterIn.QUERY, description = "검색어", example = "1"),
-                    @Parameter(name = "page", in = ParameterIn.QUERY, description = "페이지", example = "0"),
-                    @Parameter(name = "size", in = ParameterIn.QUERY, description = "사이즈", example = "20"),
-                    @Parameter(name = "sort", in = ParameterIn.QUERY, description = "정렬조건", example = ""),
-
-            },
+            summary = "사용자 등록",
+            description = "신규 사용자를 등록합니다.",
+            requestBody = @RequestBody(required = true, description = "사용자 생성 요청", content = @Content(schema = @Schema(implementation = UserCreateRequest.class))),
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "정상 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Success.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                       "code": null,
-                                                       "message": "성공적으로 처리되었습니다.",
-                                                       "data": [],
-                                                       "timestamp": "2025-04-30T15:02:38.500157+09:00"
-                                                     }
-                                                    """
-                                    )
-                            )
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "서버 오류",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Failure.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                      "code": "INTERNAL_ERROR",
-                                                      "message": "서버 내부 오류가 발생했습니다.",
-                                                      "data": null,
-                                                      "timestamp": "2025-04-30T15:00:51.092146+09:00"
-                                                    }
-                                                    """
-                                    )
-                            )
-                    )
+                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "생성 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
             }
     )
-    ApiResponse<Void> create(UserCreateRequest req);
+    ApiResponse<Void> create(@Valid UserCreateRequest req);
 
     @Operation(
-            summary = "사용자 목록 조회",
-            description = """
-                사용자 다건 조회
-            """,
-            parameters = {
-                    @Parameter(name = "q", in = ParameterIn.QUERY, description = "검색어", example = "1"),
-                    @Parameter(name = "page", in = ParameterIn.QUERY, description = "페이지", example = "0"),
-                    @Parameter(name = "size", in = ParameterIn.QUERY, description = "사이즈", example = "20"),
-                    @Parameter(name = "sort", in = ParameterIn.QUERY, description = "정렬조건", example = ""),
-
-            },
+            summary = "사용자 정보 수정",
+            description = "현재 인증된 사용자의 정보를 수정합니다.",
+            requestBody = @RequestBody(required = true, description = "사용자 수정 요청", content = @Content(schema = @Schema(implementation = UserUpdateRequest.class))),
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "정상 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Success.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                       "code": null,
-                                                       "message": "성공적으로 처리되었습니다.",
-                                                       "data": [],
-                                                       "timestamp": "2025-04-30T15:02:38.500157+09:00"
-                                                     }
-                                                    """
-                                    )
-                            )
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "서버 오류",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Failure.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                      "code": "INTERNAL_ERROR",
-                                                      "message": "서버 내부 오류가 발생했습니다.",
-                                                      "data": null,
-                                                      "timestamp": "2025-04-30T15:00:51.092146+09:00"
-                                                    }
-                                                    """
-                                    )
-                            )
-                    )
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
             }
     )
-    ApiResponse<Void> update(Long id, UserUpdateRequest req);
+    ApiResponse<Void> update(@Valid UserUpdateRequest req);
 
     @Operation(
-            summary = "사용자 목록 조회",
-            description = """
-                사용자 다건 조회
-            """,
-            requestBody = @RequestBody(
-                    required = true,
-                    description = "",
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UserUpdateRequest.class),
-                            examples = @ExampleObject(
-                                    name="기본 사용자 수정",
-                                    value = """
-                                            {
-                                                
-                                            }
-                                            """
-                            )
-                    )
-            ),
+            summary = "사용자 삭제",
+            description = "현재 인증된 사용자를 삭제합니다.",
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "정상 조회",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Success.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                       "code": null,
-                                                       "message": "성공적으로 처리되었습니다.",
-                                                       "data": null,
-                                                       "timestamp": "2025-04-30T15:02:38.500157+09:00"
-                                                     }
-                                                    """
-                                    )
-                            )
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "500",
-                            description = "서버 오류",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ApiResponse.Failure.class),
-                                    examples = @ExampleObject(
-                                            value = """
-                                                    {
-                                                      "code": "INTERNAL_ERROR",
-                                                      "message": "서버 내부 오류가 발생했습니다.",
-                                                      "data": null,
-                                                      "timestamp": "2025-04-30T15:00:51.092146+09:00"
-                                                    }
-                                                    """
-                                    )
-                            )
-                    )
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "삭제 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
             }
     )
-    ApiResponse<Void> delete(Long id);
+    ApiResponse<Void> delete();
 }

@@ -67,21 +67,21 @@ public class AuthSession {
     private List<RefreshToken> refreshTokens = new ArrayList<>();
 
     // ---- 생성/팩토리 메서드 (세터 대신)
-    public static AuthSession create(Long userId, String clientId, String deviceName, byte[] deviceFingerprint, String ip) {
+    public static AuthSession create(Long userId, String clientId, String deviceName, byte[] deviceFingerprint, String ip, Instant createdAt) {
         AuthSession s = new AuthSession();
         s.userId = userId;
         s.clientId = clientId;
         s.deviceName = deviceName;
         s.deviceFingerprint = deviceFingerprint; // 필요 시 defensive copy
         s.ip = ip;
-        s.createdAt = Instant.now();
+        s.createdAt = createdAt;
         return s;
     }
 
     // ---- 행위 메서드 (세터 대신 의미 있는 메서드로만 상태 변경)
-    public void touchLastSeen() { this.lastSeenAt = Instant.now(); }
-    public void revoke(String reason) {
-        this.revokedAt = Instant.now();
+    public void touchLastSeen(Instant when) { this.lastSeenAt = when; }
+    public void revoke(String reason, Instant when) {
+        this.revokedAt = when;
         this.revokeReason = reason;
     }
 

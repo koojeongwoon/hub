@@ -2,7 +2,9 @@ package com.tinyquest.hub.shared.utils;
 
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 import java.net.InetAddress;
 
@@ -34,5 +36,17 @@ public final class IpUtils {
                 && !ip.startsWith("127.")   // 루프백 제외
                 && !ip.startsWith("::")      // IPv6 제외
                 && ip.contains(".");         // IPv4만 허용
+    }
+
+    public static String extractClientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (StringUtils.hasText(forwarded)) {
+            return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (StringUtils.hasText(realIp)) {
+            return realIp;
+        }
+        return request.getRemoteAddr();
     }
 }

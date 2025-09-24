@@ -7,6 +7,7 @@ import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
+import com.tinyquest.hub.user.document.UserRestControllerDoc;
 import com.tinyquest.hub.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +24,26 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/users")
-public class UserRestController {
+public class UserRestController implements UserRestControllerDoc {
     private final UserService svc;
     private final CurrentUserProvider currentUserProvider;
 
     @GetMapping("/me")
+    @Override
     public UserDetailResponse get() {
         var principal = currentUserProvider.getCurrentUser();
         return getById(principal.id());
     }
 
     @GetMapping("/{id}")
+    @Override
     public UserDetailResponse getById(@PathVariable Long id) {
         assertOwnership(id);
         return svc.get(id);
     }
 
     @GetMapping
+    @Override
     public Page<UserDetailResponse> search(
             @Valid UserSearchRequest req,
             Pageable pageable
@@ -54,12 +58,14 @@ public class UserRestController {
     }
 
     @PostMapping("/register")
+    @Override
     public ApiResponse<Void> create(@Valid @RequestBody UserCreateRequest req) {
         svc.create(req);
         return ApiResponse.Success.of();
     }
 
     @PutMapping
+    @Override
     public ApiResponse<Void> update(@Valid @RequestBody UserUpdateRequest req) {
         var principal = currentUserProvider.getCurrentUser();
         svc.update(principal.id(), req);
@@ -67,6 +73,7 @@ public class UserRestController {
     }
 
     @DeleteMapping
+    @Override
     public ApiResponse<Void> delete() {
         var principal = currentUserProvider.getCurrentUser();
         svc.delete(principal.id());

@@ -6,17 +6,18 @@ import com.tinyquest.hub.auth.api.dto.request.LogoutRequest;
 import com.tinyquest.hub.auth.api.dto.request.RefreshRequest;
 import com.tinyquest.hub.auth.api.dto.request.RevokeAccessRequest;
 import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
+import com.tinyquest.hub.auth.document.AuthRestControllerDoc;
 import com.tinyquest.hub.auth.security.AuthPrincipal;
 import com.tinyquest.hub.auth.service.AuthService;
 import com.tinyquest.hub.auth.service.TokenRotationService;
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
 import com.tinyquest.hub.shared.response.ApiResponse;
+import com.tinyquest.hub.shared.utils.IpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,30 +26,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RestController
 @RequiredArgsConstructor
-    public class AuthRestController {
+public class AuthRestController implements AuthRestControllerDoc {
 
     private final AuthService authService;
     private final TokenRotationService tokenRotationService;
 
     @PostMapping("/login")
+    @Override
     public TokenResponse login(
             @Valid @RequestBody LoginRequest req,
             HttpServletRequest request
     ) {
-        String clientIp = resolveClientIp(request);
+        String clientIp = IpUtils.extractClientIp(request);
         return authService.login(req, clientIp);
     }
 
     @PostMapping("/refresh")
+    @Override
     public TokenResponse refresh(
             @Valid @RequestBody RefreshRequest request,
             HttpServletRequest httpRequest
     ) {
-        String clientIp = resolveClientIp(httpRequest);
+        String clientIp = IpUtils.extractClientIp(httpRequest);
         return tokenRotationService.rotate(request.refreshToken(), request.deviceFingerprint(), request.scope(), clientIp);
     }
 
     @PostMapping("/logout")
+    @Override
     public ApiResponse<Void> logout(
             @AuthenticationPrincipal AuthPrincipal principal,
             @Valid @RequestBody LogoutRequest request
@@ -61,6 +65,7 @@ import org.springframework.web.bind.annotation.RestController;
     }
 
     @PostMapping("/logout/all")
+    @Override
     public ApiResponse<Void> logoutAll(
             @AuthenticationPrincipal AuthPrincipal principal,
             @RequestBody(required = false) LogoutAllRequest request
@@ -74,6 +79,7 @@ import org.springframework.web.bind.annotation.RestController;
     }
 
     @PostMapping("/revoke")
+    @Override
     public ApiResponse<Void> revokeAccessToken(
             @AuthenticationPrincipal AuthPrincipal principal,
             @Valid @RequestBody RevokeAccessRequest request
@@ -85,15 +91,4 @@ import org.springframework.web.bind.annotation.RestController;
         return ApiResponse.Success.of();
     }
 
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (StringUtils.hasText(forwarded)) {
-            return forwarded.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (StringUtils.hasText(realIp)) {
-            return realIp;
-        }
-        return request.getRemoteAddr();
-    }
 }

@@ -10,6 +10,7 @@ import com.tinyquest.hub.auth.domain.repository.AccessTokenJtiRepository;
 import com.tinyquest.hub.auth.domain.repository.AuthSessionRepository;
 import com.tinyquest.hub.auth.domain.repository.RefreshTokenRepository;
 import com.tinyquest.hub.auth.infra.jwt.JwtIssuer;
+import com.tinyquest.hub.auth.support.AuthTokenUtils;
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
 import com.tinyquest.hub.shared.port.user.UserDetailsPort;
@@ -19,18 +20,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-
-    private static final String TOKEN_TYPE_BEARER = "Bearer";
 
     private final UserDetailsPort userDetailsPort;
     private final JwtIssuer jwtIssuer;
@@ -39,6 +35,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AccessTokenJtiRepository accessTokenJtiRepository;
     private final TokenAuditService tokenAuditService;
+    private final TokenRevocationService tokenRevocationService;
     private final Clock clock;
 
     @Transactional
@@ -52,10 +49,11 @@ public class AuthService {
 
         String clientId = StringUtils.hasText(req.clientId()) ? req.clientId() : "default";
         String deviceName = StringUtils.hasText(req.deviceName()) ? req.deviceName() : "unknown";
-        byte[] deviceFingerprint = decodeFingerprint(req.deviceFingerprint());
+        byte[] deviceFingerprint = AuthTokenUtils.decodeFingerprint(req.deviceFingerprint());
         String scope = StringUtils.hasText(req.scope()) ? req.scope() : null;
 
-        AuthSession session = AuthSession.create(user.id(), clientId, deviceName, deviceFingerprint, clientIp);
+        Instant issuedAt = clock.instant();
+        AuthSession session = AuthSession.create(user.id(), clientId, deviceName, deviceFingerprint, clientIp, issuedAt);
         session = authSessionRepository.save(session);
 
         var accessToken = jwtIssuer.issueAccessToken(user.id(), user.username(), session.getId());
@@ -79,7 +77,7 @@ public class AuthService {
         tokenAuditService.record(user.id(), session.getId(), refreshEntity.getId(), TokenEventType.ISSUE, issueDetail);
 
         return new TokenResponse(
-                TOKEN_TYPE_BEARER,
+                AuthTokenUtils.TOKEN_TYPE_BEARER,
                 accessToken.token(),
                 accessToken.expiresAt(),
                 refreshToken.token(),
@@ -93,28 +91,12 @@ public class AuthService {
         if (sessionId == null) {
             throw new BusinessException(ErrorCode.AUTH_SESSION_NOT_FOUND_4002);
         }
-
-        Instant now = clock.instant();
-        String normalizedReason = StringUtils.hasText(reason) ? reason : TokenEventType.LOGOUT.name();
-
-        int updated = authSessionRepository.revokeSession(sessionId, userId, now, normalizedReason);
-        if (updated == 0) {
-            throw new BusinessException(ErrorCode.AUTH_SESSION_NOT_FOUND_4002);
-        }
-
-        finalizeSessionRevocation(userId, sessionId, normalizedReason, now, false);
+        tokenRevocationService.revokeSessionWithTokens(userId, sessionId, reason, false);
     }
 
     @Transactional
     public void logoutAll(Long userId, String reason) {
-        Instant now = clock.instant();
-        String normalizedReason = StringUtils.hasText(reason) ? reason : TokenEventType.LOGOUT.name();
-
-        List<AuthSession> sessions = authSessionRepository.findByUserIdAndRevokedAtIsNullOrderByCreatedAtDesc(userId);
-        for (AuthSession session : sessions) {
-            session.revoke(normalizedReason);
-            revokeSession(userId, session.getId(), normalizedReason, now, true);
-        }
+        tokenRevocationService.revokeAllActiveSessions(userId, reason);
     }
 
     @Transactional
@@ -138,28 +120,4 @@ public class AuthService {
         }
     }
 
-    private void revokeSession(Long userId, UUID sessionId, String reason, Instant now, boolean allDevices) {
-        authSessionRepository.revokeSession(sessionId, userId, now, reason);
-        finalizeSessionRevocation(userId, sessionId, reason, now, allDevices);
-    }
-
-    private void finalizeSessionRevocation(Long userId, UUID sessionId, String reason, Instant when, boolean allDevices) {
-        refreshTokenRepository.revokeAllBySessionId(sessionId, when);
-        accessTokenJtiRepository.revokeAllBySessionId(sessionId, when, reason);
-        var detail = new java.util.HashMap<String, Object>();
-        detail.put("reason", reason);
-        detail.put("allDevices", allDevices);
-        tokenAuditService.record(userId, sessionId, null, TokenEventType.LOGOUT, detail);
-    }
-
-    private byte[] decodeFingerprint(String fingerprint) {
-        if (!StringUtils.hasText(fingerprint)) {
-            return null;
-        }
-        try {
-            return Base64.getDecoder().decode(fingerprint);
-        } catch (IllegalArgumentException ex) {
-            return fingerprint.getBytes(StandardCharsets.UTF_8);
-        }
-    }
 }

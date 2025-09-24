@@ -10,13 +10,13 @@ import com.tinyquest.hub.auth.domain.repository.AuthSessionRepository;
 import com.tinyquest.hub.auth.domain.repository.RefreshTokenRepository;
 import com.tinyquest.hub.auth.infra.jwt.JwtIssuer;
 import com.tinyquest.hub.auth.infra.jwt.JwtVerifier;
+import com.tinyquest.hub.auth.support.AuthTokenUtils;
 import com.tinyquest.hub.shared.error.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
@@ -30,14 +30,13 @@ import static com.tinyquest.hub.shared.utils.Hashing.sha256;
 @RequiredArgsConstructor
 public class TokenRotationService {
 
-    private static final String TOKEN_TYPE_BEARER = "Bearer";
-
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthSessionRepository authSessionRepository;
     private final AccessTokenJtiRepository accessTokenJtiRepository;
     private final JwtIssuer jwtIssuer;
     private final JwtVerifier jwtVerifier;
     private final TokenAuditService tokenAuditService;
+    private final TokenRevocationService tokenRevocationService;
     private final Clock clock;
 
     @Transactional
@@ -56,40 +55,40 @@ public class TokenRotationService {
         }
 
         if (!session.getUserId().equals(claims.userId()) || (claims.sessionId() != null && !session.getId().equals(claims.sessionId()))) {
-            handleReuseDetection(session, refreshToken, clientIp);
+            tokenRevocationService.handleReuseDetection(session, refreshToken, clientIp);
             throw new BusinessException(AUTH_SESSION_NOT_FOUND_4002);
         }
 
         if (refreshToken.getConsumedAt() != null || refreshToken.getRevokedAt() != null) {
-            handleReuseDetection(session, refreshToken, clientIp);
+            tokenRevocationService.handleReuseDetection(session, refreshToken, clientIp);
             throw new BusinessException(AUTH_SESSION_NOT_FOUND_4002);
         }
 
         if (refreshToken.getExpiresAt().isBefore(now)) {
-            handleReuseDetection(session, refreshToken, clientIp);
+            tokenRevocationService.handleReuseDetection(session, refreshToken, clientIp);
             throw new BusinessException(AUTH_SESSION_NOT_FOUND_4002);
         }
 
         if (refreshToken.getRotationIndex() != claims.rotation()) {
-            handleReuseDetection(session, refreshToken, clientIp);
+            tokenRevocationService.handleReuseDetection(session, refreshToken, clientIp);
             throw new BusinessException(AUTH_SESSION_NOT_FOUND_4002);
         }
 
         refreshTokenRepository.findTopBySession_IdOrderByRotationIndexDesc(session.getId())
                 .ifPresent(latest -> {
                     if (!latest.getId().equals(refreshToken.getId())) {
-                        handleReuseDetection(session, refreshToken, clientIp);
+                        tokenRevocationService.handleReuseDetection(session, refreshToken, clientIp);
                         throw new BusinessException(AUTH_SESSION_NOT_FOUND_4002);
                     }
                 });
 
-        session.touchLastSeen();
-        byte[] presentedFingerprint = decodeFingerprint(fingerprint);
+        session.touchLastSeen(now);
+        byte[] presentedFingerprint = AuthTokenUtils.decodeFingerprint(fingerprint);
         if (presentedFingerprint != null) {
             refreshToken.setPresentedFingerprint(presentedFingerprint);
         }
 
-        refreshToken.markConsumed();
+        refreshToken.markConsumed(now);
         refreshTokenRepository.save(refreshToken);
 
         String scope = StringUtils.hasText(scopeOverride) ? scopeOverride : refreshToken.getScope();
@@ -123,7 +122,7 @@ public class TokenRotationService {
         tokenAuditService.record(session.getUserId(), session.getId(), nextToken.getId(), TokenEventType.ROTATE, rotateDetail);
 
         return new TokenResponse(
-                TOKEN_TYPE_BEARER,
+                AuthTokenUtils.TOKEN_TYPE_BEARER,
                 accessToken.token(),
                 accessToken.expiresAt(),
                 newRefresh.token(),
@@ -132,43 +131,4 @@ public class TokenRotationService {
         );
     }
 
-    private void handleReuseDetection(AuthSession session, RefreshToken token, String clientIp) {
-        Instant now = clock.instant();
-        String reason = "Refresh token reuse detected";
-
-        authSessionRepository.revokeSession(session.getId(), session.getUserId(), now, reason);
-        session.revoke(reason);
-        refreshTokenRepository.revokeAllBySessionId(session.getId(), now);
-        accessTokenJtiRepository.revokeAllBySessionId(session.getId(), now, reason);
-
-        Map<String, Object> detail = new HashMap<>();
-        detail.put("refreshId", token.getId());
-        detail.put("clientId", session.getClientId());
-        detail.put("ip", clientIp);
-        if (token.getPresentedFingerprint() != null) {
-            detail.put("fingerprint", Base64.getEncoder().encodeToString(token.getPresentedFingerprint()));
-        }
-        if (token.getScope() != null) {
-            detail.put("scope", token.getScope());
-        }
-
-        tokenAuditService.record(session.getUserId(), session.getId(), token.getId(), TokenEventType.REUSE_DETECTED, detail);
-
-        var logoutDetail = new HashMap<String, Object>();
-        logoutDetail.put("reason", reason);
-        logoutDetail.put("allDevices", true);
-        logoutDetail.put("clientId", session.getClientId());
-        tokenAuditService.record(session.getUserId(), session.getId(), null, TokenEventType.LOGOUT, logoutDetail);
-    }
-
-    private byte[] decodeFingerprint(String fingerprint) {
-        if (!StringUtils.hasText(fingerprint)) {
-            return null;
-        }
-        try {
-            return Base64.getDecoder().decode(fingerprint);
-        } catch (IllegalArgumentException ex) {
-            return fingerprint.getBytes(StandardCharsets.UTF_8);
-        }
-    }
 }

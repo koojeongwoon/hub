@@ -82,8 +82,8 @@ public class RefreshToken {
     }
 
     // ---- 행위 메서드
-    public void markConsumed() { this.consumedAt = Instant.now(); }
-    public void revoke() { this.revokedAt = Instant.now(); }
+    public void markConsumed(Instant when) { this.consumedAt = when; }
+    public void revoke(Instant when) { this.revokedAt = when; }
     public void linkReplacedBy(UUID newId) { this.replacedBy = newId; }
 
     public void setPresentedFingerprint(byte[] fingerprint) { this.presentedFingerprint = fingerprint; }
