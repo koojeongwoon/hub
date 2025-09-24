@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,7 +99,7 @@ class UserRestControllerH2Test {
         var authentication = new UsernamePasswordAuthenticationToken(
                 principal,
                 null,
-                java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
         return SecurityMockMvcRequestPostProcessors.authentication(authentication);
     }

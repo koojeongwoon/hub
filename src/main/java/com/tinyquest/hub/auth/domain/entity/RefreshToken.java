@@ -70,13 +70,13 @@ public class RefreshToken {
 
     // ---- 생성/팩토리
     public static RefreshToken issue(AuthSession session, byte[] tokenHash, int rotationIndex,
-                                     String scope, Instant expiresAt) {
+                                     String scope, Instant issuedAt, Instant expiresAt) {
         RefreshToken rt = new RefreshToken();
         rt.session = session;
         rt.tokenHash = tokenHash;
         rt.rotationIndex = rotationIndex;
         rt.scope = scope;
-        rt.issuedAt = Instant.now();
+        rt.issuedAt = issuedAt;
         rt.expiresAt = expiresAt;
         return rt;
     }
@@ -85,6 +85,8 @@ public class RefreshToken {
     public void markConsumed() { this.consumedAt = Instant.now(); }
     public void revoke() { this.revokedAt = Instant.now(); }
     public void linkReplacedBy(UUID newId) { this.replacedBy = newId; }
+
+    public void setPresentedFingerprint(byte[] fingerprint) { this.presentedFingerprint = fingerprint; }
 
     // ---- 세션 연결 (세션에서 addRefreshToken에서만 호출)
     void setSession(AuthSession session) { this.session = session; }

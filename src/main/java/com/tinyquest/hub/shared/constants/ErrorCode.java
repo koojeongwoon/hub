@@ -14,6 +14,7 @@ public enum ErrorCode {
     USER_AUTH_2001("USER:AUTH:2001", "인증 토큰이 유효하지 않습니다."),
     USER_AUTH_2002("USER:AUTH:2002", "권한이 없습니다."),
     USER_NOT_FOUND_4001("USER:NOT_FOUND:4001", "사용자를 찾을 수 없습니다."),
+    AUTH_SESSION_NOT_FOUND_4002("AUTH:SESSION:4002", "인증 세션을 찾을 수 없습니다."),
 
     // ===== PRODUCT =====
     PRODUCT_VALIDATION_1001("PRODUCT:VALIDATION:1001", "가격이 음수일 수 없습니다."),

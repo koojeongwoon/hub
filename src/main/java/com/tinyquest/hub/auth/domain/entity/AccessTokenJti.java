@@ -5,11 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -25,8 +23,6 @@ import java.util.UUID;
 @ToString
 public class AccessTokenJti {
     @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
     @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "jti", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
     private UUID jti;
@@ -51,11 +47,12 @@ public class AccessTokenJti {
     private String revokeReason;
 
     // --- 팩토리 ---
-    public static AccessTokenJti issue(Long userId, UUID sessionId, Instant expiresAt) {
+    public static AccessTokenJti issue(UUID jti, Long userId, UUID sessionId, Instant issuedAt, Instant expiresAt) {
         AccessTokenJti at = new AccessTokenJti();
+        at.jti = jti;
         at.userId = userId;
         at.sessionId = sessionId;
-        at.issuedAt = Instant.now();
+        at.issuedAt = issuedAt;
         at.expiresAt = expiresAt;
         return at;
     }

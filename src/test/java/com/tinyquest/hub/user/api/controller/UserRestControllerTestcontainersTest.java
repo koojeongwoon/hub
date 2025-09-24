@@ -21,6 +21,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -110,7 +112,7 @@ class UserRestControllerTestcontainersTest {
         var authentication = new UsernamePasswordAuthenticationToken(
                 principal,
                 null,
-                java.util.List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
         return SecurityMockMvcRequestPostProcessors.authentication(authentication);
     }

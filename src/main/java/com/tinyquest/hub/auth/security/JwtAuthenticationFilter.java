@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import com.tinyquest.hub.auth.infra.jwt.JwtVerifier;
+import com.tinyquest.hub.auth.infra.jwt.JwtVerifier.JwtVerificationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtProvider tokenProvider;
+    private final JwtVerifier jwtVerifier;
 
     @Override
     protected void doFilterInternal(
@@ -30,16 +32,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             String jwt = getJwtFromRequest(request);
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                var name = tokenProvider.getUsernameFromToken(jwt);
-                long id = tokenProvider.getValueFromTokenByKey(jwt, "uid", Long.class);
-
-                var principal = new AuthPrincipal(id, name);
+            if (StringUtils.hasText(jwt)) {
+                var claims = jwtVerifier.verifyAccessToken(jwt);
+                var principal = new AuthPrincipal(claims.userId(), claims.subject());
                 var auth = new UsernamePasswordAuthenticationToken(principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
+        } catch (JwtVerificationException ex) {
+            logger.debug("JWT verification failed: %s".formatted(ex.getMessage()), ex);
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            logger.error("Unexpected error during JWT processing", ex);
         }
 
         filterChain.doFilter(request, response);
