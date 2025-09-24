@@ -12,6 +12,7 @@ public enum ErrorCode {
     USER_VALIDATION_1001("USER:VALIDATION:1001", "이메일 형식이 올바르지 않습니다."),
     USER_VALIDATION_1002("USER:VALIDATION:1002", "이미 사용 중인 이메일입니다."),
     USER_AUTH_2001("USER:AUTH:2001", "인증 토큰이 유효하지 않습니다."),
+    USER_AUTH_2002("USER:AUTH:2002", "권한이 없습니다."),
     USER_NOT_FOUND_4001("USER:NOT_FOUND:4001", "사용자를 찾을 수 없습니다."),
 
     // ===== PRODUCT =====

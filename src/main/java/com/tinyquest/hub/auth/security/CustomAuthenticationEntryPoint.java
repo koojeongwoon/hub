@@ -1,6 +1,7 @@
 package com.tinyquest.hub.auth.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tinyquest.hub.shared.constants.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,10 +30,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
         Map<String, Object> body = new HashMap<>();
-        body.put("status", HttpStatus.UNAUTHORIZED.value());
-        body.put("message", "인증이 필요합니다.");
+        body.put("code", ErrorCode.USER_AUTH_2001);
+        body.put("message", ErrorCode.USER_AUTH_2001.getMessage());
         body.put("data", null);
-        body.put("timestamp", LocalDateTime.now());
+        body.put("timestamp", OffsetDateTime.now());
 
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }

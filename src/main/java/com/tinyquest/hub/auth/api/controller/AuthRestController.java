@@ -4,7 +4,6 @@ import com.tinyquest.hub.auth.api.dto.request.LoginRequest;
 import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
 import com.tinyquest.hub.auth.service.AuthService;
 import com.tinyquest.hub.shared.response.ApiResponse;
-import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RestController
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthRestController {
 
     private final AuthService authService;
 

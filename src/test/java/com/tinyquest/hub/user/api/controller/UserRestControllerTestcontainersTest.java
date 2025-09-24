@@ -54,14 +54,14 @@ class UserRestControllerTestcontainersTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        testUser = userRepository.save(User.of("test@example.com", "testuser", 30));
+        testUser = userRepository.save(User.of("test@example.com", "p@ssw0rd", "맛스타구", 31));
     }
 
     @Test
     @DisplayName("POST /api/users - 성공")
     void createUser_success() throws Exception {
         // given
-        UserCreateRequest request = new UserCreateRequest("newuser@example.com", "newuser", 25);
+        UserCreateRequest request = new UserCreateRequest("newuser@example.com", "p@ssw0rd", "미스타구", 25);
 
         // when & then
         mockMvc.perform(post("/api/users")

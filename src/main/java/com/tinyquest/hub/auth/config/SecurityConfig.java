@@ -6,6 +6,7 @@ import com.tinyquest.hub.auth.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,8 +48,16 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authz -> authz
-                    .requestMatchers("/api/users/login", "/api/users/register", "/scalar", "/scalar/scalar.js", "/v3/api-docs").permitAll() // Adjust paths as needed
+                .authorizeHttpRequests(
+                        authz ->
+                                authz.requestMatchers(
+                                        "/api/auth/login", // 로그인
+                                        "/api/users/register", // 로그인
+                                        "/api/auth/refresh", // 갱신
+                                        "/scalar",
+                                        "/scalar/scalar.js",
+                                        "/v3/api-docs"
+                                ).permitAll() // Adjust paths as needed
                     .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception
