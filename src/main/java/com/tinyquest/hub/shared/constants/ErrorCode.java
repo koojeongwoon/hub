@@ -5,27 +5,27 @@ import lombok.Getter;
 @Getter
 public enum ErrorCode {
     // ===== COMMON =====
-    INTERNAL_SERVER_ERROR("COMMON:INTERNAL:5001", "서버 내부 오류가 발생했습니다."),
-    IP_ERROR("COMMON:INTERNAL:5010", "적합한 서버 IP를 찾을 수 없습니다."),
+    INTERNAL_SERVER_ERROR("COMMON:INTERNAL:5001", "error.common.internal"),
+    IP_ERROR("COMMON:INTERNAL:5010", "error.common.ip"),
 
     // ===== USER =====
-    USER_VALIDATION_1001("USER:VALIDATION:1001", "이메일 형식이 올바르지 않습니다."),
-    USER_VALIDATION_1002("USER:VALIDATION:1002", "이미 사용 중인 이메일입니다."),
-    USER_AUTH_2001("USER:AUTH:2001", "인증 토큰이 유효하지 않습니다."),
-    USER_AUTH_2002("USER:AUTH:2002", "권한이 없습니다."),
-    USER_NOT_FOUND_4001("USER:NOT_FOUND:4001", "사용자를 찾을 수 없습니다."),
-    AUTH_SESSION_NOT_FOUND_4002("AUTH:SESSION:4002", "인증 세션을 찾을 수 없습니다."),
+    USER_VALIDATION_1001("USER:VALIDATION:1001", "error.user.validation.invalid-email"),
+    USER_VALIDATION_1002("USER:VALIDATION:1002", "error.user.validation.email-duplicated"),
+    USER_AUTH_2001("USER:AUTH:2001", "error.user.auth.invalid-token"),
+    USER_AUTH_2002("USER:AUTH:2002", "error.user.auth.forbidden"),
+    USER_NOT_FOUND_4001("USER:NOT_FOUND:4001", "error.user.not-found"),
+    AUTH_SESSION_NOT_FOUND_4002("AUTH:SESSION:4002", "error.auth.session.not-found"),
 
     // ===== PRODUCT =====
-    PRODUCT_VALIDATION_1001("PRODUCT:VALIDATION:1001", "가격이 음수일 수 없습니다."),
-    PRODUCT_NOT_FOUND_4001("PRODUCT:NOT_FOUND:4001", "상품을 찾을 수 없습니다."),
-    PRODUCT_INTERNAL_5001("PRODUCT:INTERNAL:5001", "상품 저장 실패");
+    PRODUCT_VALIDATION_1001("PRODUCT:VALIDATION:1001", "error.product.validation.negative-price"),
+    PRODUCT_NOT_FOUND_4001("PRODUCT:NOT_FOUND:4001", "error.product.not-found"),
+    PRODUCT_INTERNAL_5001("PRODUCT:INTERNAL:5001", "error.product.internal.save-failed");
 
     private final String code;
-    private final String message;
+    private final String messageKey;
 
-    ErrorCode(String code, String message) {
+    ErrorCode(String code, String messageKey) {
         this.code = code;
-        this.message = message;
+        this.messageKey = messageKey;
     }
 }

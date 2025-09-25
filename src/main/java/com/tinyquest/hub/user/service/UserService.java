@@ -17,6 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class UserService {
     private final UserRepository repo;
     private final UserConverter converter;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     public UserDetailResponse get(Long id) {
@@ -46,7 +50,7 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_VALIDATION_1002);
         }
         String encodedPassword = passwordEncoder.encode(req.password());
-        repo.save(User.of(req.email(), encodedPassword, req.name(), req.age()));
+        repo.save(User.of(req.email(), encodedPassword, req.name(), req.age(), clock.instant()));
     }
 
     @Transactional

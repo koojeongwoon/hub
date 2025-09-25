@@ -24,10 +24,10 @@ public final class IpUtils {
                     return ip;
                 }
             }
-            throw new BusinessException(ErrorCode.IP_ERROR, ErrorCode.IP_ERROR.getMessage());
+            throw new BusinessException(ErrorCode.IP_ERROR);
         } catch (Exception e) {
             log.error("서버 IP 확인 실패", e);
-            throw new BusinessException(ErrorCode.IP_ERROR, ErrorCode.IP_ERROR.getMessage());
+            throw new BusinessException(ErrorCode.IP_ERROR);
         }
     }
 

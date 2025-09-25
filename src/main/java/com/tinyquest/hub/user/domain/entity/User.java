@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,17 +34,22 @@ public class User implements UserDetails {
 
     private Integer age;
 
-    @Column(nullable=false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable=false, updatable = false, columnDefinition = "DATETIME(3)")
+    private Instant createdAt;
 
-    private User(String email, String password, String name, Integer age) {
+    private User(String email, String password, String name, Integer age, Instant createdAt) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.age = age;
+        this.createdAt = createdAt;
     }
     public static User of(String email, String password, String name, Integer age){
-        return new User(email, password, name, age);
+        return new User(email, password, name, age, Instant.now());
+    }
+
+    public static User of(String email, String password, String name, Integer age, Instant createdAt){
+        return new User(email, password, name, age, createdAt);
     }
 
     public void change(String name, Integer age){ this.name = name; this.age = age; }
