@@ -1,5 +1,8 @@
 package com.tinyquest.hub.user.api.controller;
 
+import com.tinyquest.hub.shared.constants.ResourceCodes;
+import com.tinyquest.hub.shared.permission.PermissionAction;
+import com.tinyquest.hub.shared.permission.RequirePermission;
 import com.tinyquest.hub.shared.port.auth.provider.CurrentUserProvider;
 import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.shared.utils.SortWhitelist;
@@ -7,6 +10,7 @@ import com.tinyquest.hub.user.api.document.UserRestControllerDoc;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
+import com.tinyquest.hub.user.api.dto.request.UserRoleUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
 import com.tinyquest.hub.user.service.UserService;
 import jakarta.validation.Valid;
@@ -18,7 +22,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Validated
 @RestController
@@ -44,6 +50,7 @@ public class UserRestController implements UserRestControllerDoc {
 
     @GetMapping
     @Override
+    @RequirePermission(resourceCode = ResourceCodes.FEATURE_USER_SEARCH, actions = PermissionAction.EXECUTE)
     public Page<UserDetailResponse> search(
             @Valid UserSearchRequest req,
             Pageable pageable
@@ -55,6 +62,18 @@ public class UserRestController implements UserRestControllerDoc {
         );
 
         return svc.search(req, safe);
+    }
+
+    @PutMapping("/{id}/roles")
+    @Override
+    @RequirePermission(resourceCode = ResourceCodes.FEATURE_USER_ROLE_MANAGEMENT, actions = PermissionAction.UPDATE)
+    public Response<Void> updateRoles(
+            @PathVariable Long id,
+            @Valid @RequestBody UserRoleUpdateRequest req
+    ) {
+        Set<String> roleCodes = new HashSet<>(req.roleCodes());
+        svc.updateRoles(id, roleCodes);
+        return Response.Success.of();
     }
 
     @PostMapping("/register")

@@ -1,5 +1,6 @@
 package com.tinyquest.hub.shared.error;
 
+import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.response.Response;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -65,6 +67,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Response.Failure<Void> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return Response.Failure.of("TYPE_MISMATCH", resolveMessage("error.generic.type-mismatch"));
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public Response.Failure<Void> handleAccessDenied(AccessDeniedException ex) {
+        return Response.Failure.of(ErrorCode.USER_AUTH_2002.getCode(),
+                resolveMessage(ErrorCode.USER_AUTH_2002.getMessageKey()));
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

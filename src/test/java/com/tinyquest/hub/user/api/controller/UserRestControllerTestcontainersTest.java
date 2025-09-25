@@ -2,6 +2,7 @@ package com.tinyquest.hub.user.api.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tinyquest.hub.auth.security.AuthPrincipal;
+import com.tinyquest.hub.shared.port.auth.command.UserRoleAssignmentPort;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.domain.entity.User;
 import com.tinyquest.hub.user.domain.repository.UserRepository;
@@ -22,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -61,11 +62,15 @@ class UserRestControllerTestcontainersTest {
 
     private User testUser;
 
+    @Autowired
+    private UserRoleAssignmentPort userRoleAssignmentPort;
+
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
         String seedEmail = uniqueEmail("seed");
         testUser = userRepository.save(User.of(seedEmail, "p@ssw0rd", "맛스타구", 31));
+        userRoleAssignmentPort.assignDefaultRoles(testUser.getId());
     }
 
     @Test
@@ -107,13 +112,13 @@ class UserRestControllerTestcontainersTest {
         assertThat(userRepository.findById(testUser.getId())).isEmpty();
     }
 
-    private RequestPostProcessor auth(User user) {
+    private RequestPostProcessor auth(User user, String... authorities) {
         var principal = new AuthPrincipal(user.getId(), user.getEmail());
-        var authentication = new UsernamePasswordAuthenticationToken(
-                principal,
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
-        );
+        String[] roles = authorities != null && authorities.length > 0 ? authorities : new String[]{"ROLE_USER"};
+        var granted = Arrays.stream(roles)
+                .map(SimpleGrantedAuthority::new)
+                .toList();
+        var authentication = new UsernamePasswordAuthenticationToken(principal, null, granted);
         return SecurityMockMvcRequestPostProcessors.authentication(authentication);
     }
 

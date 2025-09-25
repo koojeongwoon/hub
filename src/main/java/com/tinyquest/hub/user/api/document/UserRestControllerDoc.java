@@ -4,6 +4,7 @@ import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
+import com.tinyquest.hub.user.api.dto.request.UserRoleUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,4 +83,17 @@ public interface UserRestControllerDoc {
             }
     )
     Response<Void> delete();
+
+    @Operation(
+            summary = "사용자 역할 변경",
+            description = "지정한 사용자의 역할 목록을 갱신합니다.",
+            parameters = {
+                    @Parameter(name = "id", in = ParameterIn.PATH, description = "사용자 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
+            },
+            requestBody = @RequestBody(required = true, description = "역할 변경 요청", content = @Content(schema = @Schema(implementation = UserRoleUpdateRequest.class))),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = Response.Success.class)))
+            }
+    )
+    Response<Void> updateRoles(Long id, @Valid UserRoleUpdateRequest req);
 }

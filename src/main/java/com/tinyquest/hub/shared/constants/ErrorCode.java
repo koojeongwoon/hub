@@ -13,6 +13,7 @@ public enum ErrorCode {
     USER_VALIDATION_1002("USER:VALIDATION:1002", "error.user.validation.email-duplicated"),
     USER_AUTH_2001("USER:AUTH:2001", "error.user.auth.invalid-token"),
     USER_AUTH_2002("USER:AUTH:2002", "error.user.auth.forbidden"),
+    AUTH_ROLE_NOT_FOUND_4001("AUTH:ROLE:4001", "error.auth.role.not-found"),
     USER_NOT_FOUND_4001("USER:NOT_FOUND:4001", "error.user.not-found"),
     AUTH_SESSION_NOT_FOUND_4002("AUTH:SESSION:4002", "error.auth.session.not-found"),
 

@@ -2,6 +2,7 @@ package com.tinyquest.hub.user.service;
 
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
+import com.tinyquest.hub.shared.port.auth.command.UserRoleAssignmentPort;
 import com.tinyquest.hub.user.api.converter.UserConverter;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -30,6 +31,7 @@ public class UserService {
     private final UserConverter converter;
     private final PasswordEncoder passwordEncoder;
     private final Clock clock;
+    private final UserRoleAssignmentPort userRoleAssignmentPort;
 
     @Transactional(readOnly = true)
     public UserDetailResponse get(Long id) {
@@ -50,7 +52,8 @@ public class UserService {
             throw new BusinessException(ErrorCode.USER_VALIDATION_1002);
         }
         String encodedPassword = passwordEncoder.encode(req.password());
-        repo.save(User.of(req.email(), encodedPassword, req.name(), req.age(), clock.instant()));
+        User saved = repo.save(User.of(req.email(), encodedPassword, req.name(), req.age(), clock.instant()));
+        userRoleAssignmentPort.assignDefaultRoles(saved.getId());
     }
 
     @Transactional
@@ -60,5 +63,16 @@ public class UserService {
     }
 
     @Transactional
-    public void delete(Long id) { repo.deleteById(id); }
+    public void delete(Long id) {
+        userRoleAssignmentPort.updateRoles(id, Set.of());
+        repo.deleteById(id);
+    }
+
+    @Transactional
+    public void updateRoles(Long id, Set<String> roleCodes) {
+        if (!repo.existsById(id)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND_4001);
+        }
+        userRoleAssignmentPort.updateRoles(id, roleCodes);
+    }
 }
