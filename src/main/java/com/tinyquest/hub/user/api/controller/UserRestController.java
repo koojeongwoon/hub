@@ -1,13 +1,13 @@
 package com.tinyquest.hub.user.api.controller;
 
 import com.tinyquest.hub.shared.port.auth.provider.CurrentUserProvider;
-import com.tinyquest.hub.shared.response.ApiResponse;
+import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.shared.utils.SortWhitelist;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
 import com.tinyquest.hub.user.api.dto.response.UserDetailResponse;
-import com.tinyquest.hub.user.document.UserRestControllerDoc;
+import com.tinyquest.hub.user.api.document.UserRestControllerDoc;
 import com.tinyquest.hub.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,25 +59,25 @@ public class UserRestController implements UserRestControllerDoc {
 
     @PostMapping("/register")
     @Override
-    public ApiResponse<Void> create(@Valid @RequestBody UserCreateRequest req) {
+    public Response<Void> create(@Valid @RequestBody UserCreateRequest req) {
         svc.create(req);
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
     @PutMapping
     @Override
-    public ApiResponse<Void> update(@Valid @RequestBody UserUpdateRequest req) {
+    public Response<Void> update(@Valid @RequestBody UserUpdateRequest req) {
         var principal = currentUserProvider.getCurrentUser();
         svc.update(principal.id(), req);
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
     @DeleteMapping
     @Override
-    public ApiResponse<Void> delete() {
+    public Response<Void> delete() {
         var principal = currentUserProvider.getCurrentUser();
         svc.delete(principal.id());
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
     private void assertOwnership(Long id) {

@@ -1,6 +1,6 @@
-package com.tinyquest.hub.user.document;
+package com.tinyquest.hub.user.api.document;
 
-import com.tinyquest.hub.shared.response.ApiResponse;
+import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.user.api.dto.request.UserCreateRequest;
 import com.tinyquest.hub.user.api.dto.request.UserSearchRequest;
 import com.tinyquest.hub.user.api.dto.request.UserUpdateRequest;
@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -23,7 +24,7 @@ public interface UserRestControllerDoc {
             summary = "내 프로필 조회",
             description = "현재 인증된 사용자의 상세 정보를 반환합니다.",
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
+                    @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
             }
     )
     UserDetailResponse get();
@@ -35,7 +36,7 @@ public interface UserRestControllerDoc {
                     @Parameter(name = "id", in = ParameterIn.PATH, description = "사용자 ID", required = true, schema = @Schema(type = "integer", format = "int64"))
             },
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
+                    @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = UserDetailResponse.class)))
             }
     )
     UserDetailResponse getById(Long id);
@@ -47,7 +48,7 @@ public interface UserRestControllerDoc {
                     @Parameter(name = "q", in = ParameterIn.QUERY, description = "검색 키워드", schema = @Schema(type = "string"))
             },
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = Page.class)))
+                    @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(schema = @Schema(implementation = Page.class)))
             }
     )
     Page<UserDetailResponse> search(@Parameter(hidden = true) @Valid UserSearchRequest req,
@@ -58,27 +59,27 @@ public interface UserRestControllerDoc {
             description = "신규 사용자를 등록합니다.",
             requestBody = @RequestBody(required = true, description = "사용자 생성 요청", content = @Content(schema = @Schema(implementation = UserCreateRequest.class))),
             responses = {
-                @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "생성 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
+                @ApiResponse(responseCode = "200", description = "생성 성공", content = @Content(schema = @Schema(implementation = Response.Success.class)))
             }
     )
-    ApiResponse<Void> create(@Valid UserCreateRequest req);
+    Response<Void> create(@Valid UserCreateRequest req);
 
     @Operation(
             summary = "사용자 정보 수정",
             description = "현재 인증된 사용자의 정보를 수정합니다.",
             requestBody = @RequestBody(required = true, description = "사용자 수정 요청", content = @Content(schema = @Schema(implementation = UserUpdateRequest.class))),
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
+                    @ApiResponse(responseCode = "200", description = "수정 성공", content = @Content(schema = @Schema(implementation = Response.Success.class)))
             }
     )
-    ApiResponse<Void> update(@Valid UserUpdateRequest req);
+    Response<Void> update(@Valid UserUpdateRequest req);
 
     @Operation(
             summary = "사용자 삭제",
             description = "현재 인증된 사용자를 삭제합니다.",
             responses = {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "삭제 성공", content = @Content(schema = @Schema(implementation = ApiResponse.Success.class)))
+                    @ApiResponse(responseCode = "200", description = "삭제 성공", content = @Content(schema = @Schema(implementation = Response.Success.class)))
             }
     )
-    ApiResponse<Void> delete();
+    Response<Void> delete();
 }

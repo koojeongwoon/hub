@@ -6,13 +6,13 @@ import com.tinyquest.hub.auth.api.dto.request.LogoutRequest;
 import com.tinyquest.hub.auth.api.dto.request.RefreshRequest;
 import com.tinyquest.hub.auth.api.dto.request.RevokeAccessRequest;
 import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
-import com.tinyquest.hub.auth.document.AuthRestControllerDoc;
+import com.tinyquest.hub.auth.api.document.AuthRestControllerDoc;
 import com.tinyquest.hub.auth.security.AuthPrincipal;
 import com.tinyquest.hub.auth.service.AuthService;
 import com.tinyquest.hub.auth.service.TokenRotationService;
 import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
-import com.tinyquest.hub.shared.response.ApiResponse;
+import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.shared.utils.IpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Objects;
 
 @RequestMapping("/api/auth")
 @RestController
@@ -53,7 +55,7 @@ public class AuthRestController implements AuthRestControllerDoc {
 
     @PostMapping("/logout")
     @Override
-    public ApiResponse<Void> logout(
+    public Response<Void> logout(
             @AuthenticationPrincipal AuthPrincipal principal,
             @Valid @RequestBody LogoutRequest request
     ) {
@@ -61,26 +63,26 @@ public class AuthRestController implements AuthRestControllerDoc {
             throw new BusinessException(ErrorCode.USER_AUTH_2001);
         }
         authService.logout(principal.id(), request.sessionId(), request.reason());
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
     @PostMapping("/logout/all")
     @Override
-    public ApiResponse<Void> logoutAll(
+    public Response<Void> logoutAll(
             @AuthenticationPrincipal AuthPrincipal principal,
             @RequestBody(required = false) LogoutAllRequest request
     ) {
         if (principal == null) {
             throw new BusinessException(ErrorCode.USER_AUTH_2001);
         }
-        String reason = request != null ? request.reason() : null;
+        String reason = Objects.nonNull(request) ? request.reason() : null;
         authService.logoutAll(principal.id(), reason);
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
     @PostMapping("/revoke")
     @Override
-    public ApiResponse<Void> revokeAccessToken(
+    public Response<Void> revokeAccessToken(
             @AuthenticationPrincipal AuthPrincipal principal,
             @Valid @RequestBody RevokeAccessRequest request
     ) {
@@ -88,7 +90,7 @@ public class AuthRestController implements AuthRestControllerDoc {
             throw new BusinessException(ErrorCode.USER_AUTH_2001);
         }
         authService.revokeAccessToken(principal.id(), request.jti(), request.reason());
-        return ApiResponse.Success.of();
+        return Response.Success.of();
     }
 
 }

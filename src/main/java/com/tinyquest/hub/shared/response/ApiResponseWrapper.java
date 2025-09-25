@@ -26,7 +26,7 @@ public class ApiResponseWrapper implements ResponseBodyAdvice<Object> {
                 || (returnType.getMethod() != null && returnType.getMethod().isAnnotationPresent(NoWrap.class))) {
             return false;
         }
-        return !ApiResponse.class.isAssignableFrom(returnType.getParameterType());
+        return !Response.class.isAssignableFrom(returnType.getParameterType());
     }
 
     @Override
@@ -51,13 +51,13 @@ public class ApiResponseWrapper implements ResponseBodyAdvice<Object> {
             HttpStatusCode status = entity.getStatusCode();
             HttpHeaders headers = HttpHeaders.readOnlyHttpHeaders(entity.getHeaders());
 
-            if (origin instanceof ApiResponse<?>) {
+            if (origin instanceof Response<?>) {
                 return entity;
             }
 
             if (method == HttpMethod.POST) {
                 if (origin == null) {
-                    return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(ApiResponse.Success.of(null));
+                    return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(Response.Success.of(null));
                 }
                 if (!headers.containsKey(HttpHeaders.LOCATION)) {
                     tryExtractId(origin).ifPresent(id -> {
@@ -69,15 +69,15 @@ public class ApiResponseWrapper implements ResponseBodyAdvice<Object> {
                 }
             } else if (method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) {
                 if (origin == null && (status.equals(HttpStatus.OK) || status.equals(HttpStatus.NO_CONTENT))) {
-                    return ResponseEntity.ok().headers(headers).body(ApiResponse.Success.of(null));
+                    return ResponseEntity.ok().headers(headers).body(Response.Success.of(null));
                 }
             }
 
-            return ResponseEntity.status(status).headers(headers).body(ApiResponse.Success.of(origin));
+            return ResponseEntity.status(status).headers(headers).body(Response.Success.of(origin));
         }
 
         if (body == null) {
-            return ApiResponse.Success.of(null);
+            return Response.Success.of(null);
         }
 
         if (method == HttpMethod.POST) {
@@ -91,7 +91,7 @@ public class ApiResponseWrapper implements ResponseBodyAdvice<Object> {
             }
         }
 
-        return ApiResponse.Success.of(body);
+        return Response.Success.of(body);
     }
 
     private Optional<String> tryExtractId(Object body) {

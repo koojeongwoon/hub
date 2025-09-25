@@ -7,10 +7,10 @@ import java.time.OffsetDateTime;
  * sealed interface로 구현하여, Success, Failure 등 정해진 타입의 응답만 반환되도록 강제합니다.
  * @param <T> 응답 데이터의 타입
  */
-public sealed interface ApiResponse<T> permits ApiResponse.Success, ApiResponse.Failure {
+public sealed interface Response<T> permits Response.Success, Response.Failure {
 
     record Success<T>(String code, String message, T data, OffsetDateTime timestamp)
-            implements ApiResponse<T> {
+            implements Response<T> {
         public static <T> Success<T> of(T data) {
             return new Success<>("OK", "success", data, OffsetDateTime.now());
         }
@@ -21,7 +21,7 @@ public sealed interface ApiResponse<T> permits ApiResponse.Success, ApiResponse.
     }
 
     record Failure<T>(String code, String message, T data, OffsetDateTime timestamp)
-            implements ApiResponse<T> {
+            implements Response<T> {
 
         public static Failure<Void> of(String code, String message) {
             return new Failure<>(code, message, null, OffsetDateTime.now());

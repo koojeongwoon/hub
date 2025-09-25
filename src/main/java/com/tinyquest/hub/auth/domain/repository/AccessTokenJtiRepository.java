@@ -18,7 +18,7 @@ public interface AccessTokenJtiRepository extends JpaRepository<AccessTokenJti, 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update AccessTokenJti a set a.revokedAt = :revokedAt, a.revokeReason = :reason " +
             "where a.jti = :jti and a.userId = :userId and a.revokedAt is null")
-    int revokeByJti(@Param("jti") UUID jti,
+    void revokeByJti(@Param("jti") UUID jti,
                     @Param("userId") Long userId,
                     @Param("revokedAt") Instant revokedAt,
                     @Param("reason") String reason);
@@ -28,7 +28,7 @@ public interface AccessTokenJtiRepository extends JpaRepository<AccessTokenJti, 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update AccessTokenJti a set a.revokedAt = :revokedAt, a.revokeReason = :reason " +
             "where a.sessionId = :sessionId and a.revokedAt is null")
-    int revokeAllBySessionId(@Param("sessionId") UUID sessionId,
+    void revokeAllBySessionId(@Param("sessionId") UUID sessionId,
                              @Param("revokedAt") Instant revokedAt,
                              @Param("reason") String reason);
 }
