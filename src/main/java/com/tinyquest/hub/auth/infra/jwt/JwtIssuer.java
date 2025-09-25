@@ -1,8 +1,8 @@
 package com.tinyquest.hub.auth.infra.jwt;
 
 import com.tinyquest.hub.auth.config.JwtProperties;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

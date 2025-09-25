@@ -1,11 +1,11 @@
 package com.tinyquest.hub.auth.security;
 
+import com.tinyquest.hub.auth.infra.jwt.JwtVerifier;
+import com.tinyquest.hub.auth.infra.jwt.JwtVerifier.JwtVerificationException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import com.tinyquest.hub.auth.infra.jwt.JwtVerifier;
-import com.tinyquest.hub.auth.infra.jwt.JwtVerifier.JwtVerificationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

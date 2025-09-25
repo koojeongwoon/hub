@@ -21,7 +21,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Map;
 
 import static com.tinyquest.hub.shared.constants.ErrorCode.AUTH_SESSION_NOT_FOUND_4002;
 import static com.tinyquest.hub.shared.utils.Hashing.sha256;

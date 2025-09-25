@@ -9,7 +9,6 @@ import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
 
 @Entity

@@ -1,20 +1,16 @@
 package com.tinyquest.hub.auth.api.document;
 
-import com.tinyquest.hub.auth.api.dto.request.LoginRequest;
-import com.tinyquest.hub.auth.api.dto.request.LogoutAllRequest;
-import com.tinyquest.hub.auth.api.dto.request.LogoutRequest;
-import com.tinyquest.hub.auth.api.dto.request.RefreshRequest;
-import com.tinyquest.hub.auth.api.dto.request.RevokeAccessRequest;
+import com.tinyquest.hub.auth.api.dto.request.*;
 import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
-import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.auth.security.AuthPrincipal;
+import com.tinyquest.hub.shared.response.Response;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.validation.Valid;
 
 @Tag(name = "0-0. Auth API", description = "인증/인가")
@@ -28,7 +24,7 @@ public interface AuthRestControllerDoc {
                     @ApiResponse(responseCode = "200", description = "로그인 성공", content = @Content(schema = @Schema(implementation = TokenResponse.class)))
             }
     )
-    TokenResponse login(@Valid LoginRequest req, HttpServletRequest request);
+    TokenResponse login(LoginRequest req, HttpServletRequestWrapper request);
 
     @Operation(
             summary = "토큰 갱신",
@@ -38,7 +34,7 @@ public interface AuthRestControllerDoc {
                     @ApiResponse(responseCode = "200", description = "갱신 성공", content = @Content(schema = @Schema(implementation = TokenResponse.class)))
             }
     )
-    TokenResponse refresh(@Valid RefreshRequest request, HttpServletRequest httpRequest);
+    TokenResponse refresh(@Valid RefreshRequest request, HttpServletRequestWrapper httpRequest);
 
     @Operation(
             summary = "현재 세션 로그아웃",

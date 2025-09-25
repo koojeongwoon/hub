@@ -1,12 +1,8 @@
 package com.tinyquest.hub.auth.api.controller;
 
-import com.tinyquest.hub.auth.api.dto.request.LoginRequest;
-import com.tinyquest.hub.auth.api.dto.request.LogoutAllRequest;
-import com.tinyquest.hub.auth.api.dto.request.LogoutRequest;
-import com.tinyquest.hub.auth.api.dto.request.RefreshRequest;
-import com.tinyquest.hub.auth.api.dto.request.RevokeAccessRequest;
-import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
 import com.tinyquest.hub.auth.api.document.AuthRestControllerDoc;
+import com.tinyquest.hub.auth.api.dto.request.*;
+import com.tinyquest.hub.auth.api.dto.response.TokenResponse;
 import com.tinyquest.hub.auth.security.AuthPrincipal;
 import com.tinyquest.hub.auth.service.AuthService;
 import com.tinyquest.hub.auth.service.TokenRotationService;
@@ -14,7 +10,7 @@ import com.tinyquest.hub.shared.constants.ErrorCode;
 import com.tinyquest.hub.shared.error.BusinessException;
 import com.tinyquest.hub.shared.response.Response;
 import com.tinyquest.hub.shared.utils.IpUtils;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -37,7 +33,7 @@ public class AuthRestController implements AuthRestControllerDoc {
     @Override
     public TokenResponse login(
             @Valid @RequestBody LoginRequest req,
-            HttpServletRequest request
+            HttpServletRequestWrapper request
     ) {
         String clientIp = IpUtils.extractClientIp(request);
         return authService.login(req, clientIp);
@@ -47,7 +43,7 @@ public class AuthRestController implements AuthRestControllerDoc {
     @Override
     public TokenResponse refresh(
             @Valid @RequestBody RefreshRequest request,
-            HttpServletRequest httpRequest
+            HttpServletRequestWrapper httpRequest
     ) {
         String clientIp = IpUtils.extractClientIp(httpRequest);
         return tokenRotationService.rotate(request.refreshToken(), request.deviceFingerprint(), request.scope(), clientIp);
